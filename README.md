@@ -24,7 +24,7 @@ $ pip install regex
 
 ## Example Usage
 
-A simple example of how to use `vncorenlp`:
+A simple example of how to use this tool:
 
 ```python
 #!/usr/bin/python
