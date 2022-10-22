@@ -1,7 +1,7 @@
 import re
 import regex
 
-from string_utils import StringUtils, VN_abbreviation, is_alphabetic, VN_exception
+from StringUtils import StringUtils, VN_abbreviation, is_alphabetic, VN_exception
 
 
 class Regex:
@@ -73,10 +73,6 @@ def compile_(x):
 
 
 class Tokenizer:
-    @staticmethod
-    def trim_(s):
-        """java implementation of trim."""
-        return " ".join(s.split())
 
     @staticmethod
     def split_(pattern, s):
@@ -88,9 +84,9 @@ class Tokenizer:
 
     @staticmethod
     def tokenize(s):
-        if s is None or Tokenizer.trim_(s) == "":
+        if s is None or s.strip() == "":
             return []
-        temp_tokens = Tokenizer.split_("\\s+", Tokenizer.trim_(s))
+        temp_tokens = Tokenizer.split_("\\s+", s.strip())
         if len(temp_tokens) == 0:
             return []
 
@@ -101,7 +97,7 @@ class Tokenizer:
                 continue
 
             if token.endswith(","):
-                tokens.extend(Tokenizer.tokenize(Tokenizer.substring_(token, 0, len(token) - 1)))
+                tokens.extend(Tokenizer.tokenize(token[0: len(token) - 1]))
                 tokens.append(",")
                 continue
             if token in VN_abbreviation:
@@ -112,7 +108,7 @@ class Tokenizer:
                 ):
                     tokens.append(token)
                     continue
-                tokens.extend(Tokenizer.tokenize(Tokenizer.substring_(token, 0, len(token) - 1)))
+                tokens.extend(Tokenizer.tokenize(token[0: len(token) - 1] ))
                 tokens.append(".")
                 continue
             if token in VN_exception:
@@ -191,11 +187,11 @@ class Tokenizer:
     @staticmethod
     def recursive(tokens, token, beginMatch, endMatch):
         if beginMatch > 0:
-            tokens.extend(Tokenizer.tokenize(Tokenizer.substring_(token, 0, beginMatch)))
+            tokens.extend(Tokenizer.tokenize(token[0: beginMatch] ))
 
-        tokens.extend(Tokenizer.tokenize(Tokenizer.substring_(token, beginMatch, endMatch)))
+        tokens.extend(Tokenizer.tokenize(token[beginMatch: endMatch] ))
         if endMatch < len(token):
-            tokens.extend(Tokenizer.tokenize(Tokenizer.substring_(token[:endMatch])))
+            tokens.extend(Tokenizer.tokenize(token[:endMatch] ))
         return tokens
 
     @staticmethod
@@ -243,23 +239,29 @@ class Tokenizer:
                     if beforeToken[0].isupper():
                         if len(beforeToken) == 1:
                             continue
-
+                
                 sentences.append(Tokenizer.joinSentence(sentence))
                 sentence = []
         return sentences
 
     @staticmethod
     def joinSentence(tokens):
+        sent = ""
         length = len(tokens)
-        sent = []
         for i in range(length):
             token = tokens[i]
             if token == "" or token is None or token == StringConst.SPACE:
                 continue
-            sent.append(token)
+
+            sent = sent + token
             if i < length - 1:
-                sent.append(StringConst.SPACE)
-        return " ".join(sent)
+                sent = sent + StringConst.SPACE
+        return sent.strip()
+    
+    @staticmethod
+    def sentence_tokenize(s):
+        rawSentences = Tokenizer.joinSentences(Tokenizer.tokenize(s))
+        return rawSentences
 
 
 class StringConst:
@@ -270,10 +272,3 @@ class StringConst:
     STOP = "."
     COLON = ":"
     UNDERSCORE = "_"
-
-
-if __name__ == "__main__":
-    s = "Ông Nguyễn Khắc Chúc  đang làm việc tại Đại học Quốc gia Hà Nội. Bà Lan, vợ ông Chúc, cũng làm việc tại đây."
-    tokens = Tokenizer.tokenize(s)
-    print(tokens)
-    print(Tokenizer.joinSentences(Tokenizer.tokenize(s)))
